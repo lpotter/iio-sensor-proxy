@@ -248,7 +248,7 @@ build_channel_array (const char        *device_dir,
 			current->name = g_strndup (name, strlen(name) - strlen("_en"));
 			current->generic_name = iioutils_break_up_name (current->name);
 			if (g_strcmp0(current->generic_name, "in_rot_from_north_magnetic_tilt") == 0) {
-				current->generic_name = "in_rot";
+				current->generic_name = (char *) "in_rot";
 			}
 
 			index_name = g_strdup_printf ("%s_index", current->name);
@@ -464,7 +464,7 @@ size_from_channelarray (iio_channel_info **channels,
 void
 process_scan_1 (char              *data,
     BufferDrvData        *buffer_data,
-		char              *ch_name,
+		const char        *ch_name,
 		int               *ch_val,
 		gdouble           *ch_scale,
 		gboolean          *ch_present)
