@@ -521,7 +521,7 @@ enable_sensors (GUdevDevice *dev,
 	GDir *dir;
 	char *device_dir;
 	const char *name;
-	gboolean ret = TRUE;
+	gboolean ret = FALSE;
 
 	device_dir = g_build_filename (g_udev_device_get_sysfs_path (dev), "scan_elements", NULL);
 	dir = g_dir_open (device_dir, 0, NULL);
@@ -539,6 +539,7 @@ enable_sensors (GUdevDevice *dev,
 		/* Already enabled? */
 		path = g_strdup_printf ("scan_elements/%s", name);
 		if (g_udev_device_get_sysfs_attr_as_boolean (dev, path)) {
+			ret = TRUE;
 			g_free (path);
 			continue;
 		}
@@ -547,14 +548,19 @@ enable_sensors (GUdevDevice *dev,
 		/* Enable */
 		if (write_sysfs_int (name, device_dir, enable) < 0) {
 			g_warning ("Could not enable sensor %s/%s", device_dir, name);
-			ret = FALSE;
 			continue;
 		}
 
+		ret = TRUE;
 		g_debug ("Enabled sensor %s/%s", device_dir, name);
 	}
 	g_dir_close (dir);
 	g_free (device_dir);
+
+	if (!ret) {
+		g_warning ("Failed to enable any sensors for device '%s'",
+			   g_udev_device_get_sysfs_path (dev));
+	}
 
 	return ret;
 }
@@ -566,12 +572,14 @@ enable_ring_buffer (BufferDrvData *data)
 
 	/* Setup ring buffer parameters */
 	ret = write_sysfs_int("buffer/length", data->dev_dir_name, 128);
-	if (ret < 0)
+	if (ret < 0) {
+		g_warning ("Failed to set ring buffer length for %s", data->dev_dir_name);
 		return FALSE;
+	}
 	/* Enable the buffer */
 	ret = write_sysfs_int_and_verify("buffer/enable", data->dev_dir_name, 1);
 	if (ret < 0) {
-		printf("Unable to enable the buffer %d\n", ret);
+		g_warning ("Unable to enable ring buffer for %s", data->dev_dir_name);
 		return FALSE;
 	}
 

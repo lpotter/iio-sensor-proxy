@@ -77,3 +77,5 @@ Tested on
 - MacBook Air (6,2)
 - MacBook Air (4,2)
 - Toshiba Portégé Z10t
+- Dell Inspiron 13 7000
+- Cube i9
